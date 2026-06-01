@@ -68,12 +68,12 @@ function updateScore(points) {
 
 // Draw functions
 function drawPaddle() {
-    ctx.fillStyle = '#00FF88';
+    ctx.fillStyle = '#F8C471';
     ctx.fillRect(paddle.x, paddle.y, paddle.width, paddle.height);
 }
 
 function drawBall() {
-    ctx.fillStyle = '#FFD700';
+    ctx.fillStyle = '#FFD27F';
     ctx.beginPath();
     ctx.arc(ball.x, ball.y, ball.radius, 0, Math.PI * 2);
     ctx.fill();
