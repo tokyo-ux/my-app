@@ -3,76 +3,446 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ブロック崩しゲーム</title>
+    <title>NEON BREAKOUT | ネオン・ブロック崩し</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;800;900&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
     <style>
-:root{
-  --bg1:#111;
-  --bg2:#2b2b2b;
-  --accent:#FFD27F;
-  --text:#E6E1C5;
-}
-*{margin:0;padding:0;box-sizing:border-box}
-body{
-  font-family: "Courier New", Courier, monospace;
-  background:
-    radial-gradient(circle at 10% 10%, rgba(255,255,255,0.03), transparent 20%),
-    linear-gradient(180deg,#0b1020 0%,#1b2330 100%);
-  color:var(--text);
-  display:flex;flex-direction:column;justify-content:center;align-items:center;height:100vh;
-}
-h1{
-  color:var(--accent);
-  font-size:24px;
-  text-shadow: 0 0 2px rgba(255,210,127,0.6);
-  margin-bottom:16px;
-  letter-spacing:2px;
-}
-#gameContainer{position:relative;margin-bottom:20px}
-canvas{
-  border:6px solid #111;
-  background:linear-gradient(180deg,#041018 0%, #00121a 100%);
-  display:block;
-  width:400px;height:600px;
-  image-rendering: pixelated;
-  box-shadow: 0 6px 0 rgba(0,0,0,0.6), inset 0 0 0 4px rgba(255,255,255,0.02);
-  outline: 6px solid #0f1720;
-}
-#gameInfo{display:flex;gap:40px;justify-content:center;margin-bottom:10px;color:var(--text);font-size:14px}
-#gameOver{
-  position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
-  background:linear-gradient(180deg, rgba(3,3,3,0.9), rgba(15,15,15,0.9));
-  color:var(--text);padding:24px;border:4px solid var(--accent);text-align:center;z-index:100;display:none;
-  width:320px;box-shadow:0 8px 0 rgba(0,0,0,0.6);
-}
-#gameOver h2{font-size:20px;margin-bottom:8px;color:var(--accent);letter-spacing:1px}
-#gameOver p{font-size:16px;margin-bottom:12px}
-#gameOver button{
-  font-family:inherit;font-size:12px;padding:8px 20px;background:var(--accent);color:#111;border:none;cursor:pointer;
-  box-shadow: 0 4px 0 #000, inset 0 -3px 0 rgba(0,0,0,0.15);border-top:2px solid rgba(255,255,255,0.2);
-}
-#gameOver button:hover{filter:brightness(1.05)}
-.instructions{color:var(--text);text-align:center;font-size:12px;margin-top:10px;opacity:0.9}
+        :root {
+            --bg-dark: #070711;
+            --bg-card: rgba(15, 15, 30, 0.75);
+            --neon-cyan: #00f3ff;
+            --neon-pink: #ff007f;
+            --neon-purple: #b026ff;
+            --neon-yellow: #ffe600;
+            --neon-green: #00ff66;
+            --neon-orange: #ff6600;
+            --text-glow: #e2f1ff;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            user-select: none;
+        }
+
+        body {
+            font-family: 'Rajdhani', sans-serif;
+            background-color: var(--bg-dark);
+            background-image: 
+                radial-gradient(circle at 50% 20%, rgba(176, 38, 255, 0.15) 0%, transparent 50%),
+                radial-gradient(circle at 10% 80%, rgba(0, 243, 255, 0.12) 0%, transparent 45%),
+                radial-gradient(circle at 90% 80%, rgba(255, 0, 127, 0.12) 0%, transparent 45%),
+                linear-gradient(to bottom, rgba(7,7,17,0.95), rgba(10,10,25,0.98));
+            color: var(--text-glow);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            overflow-x: hidden;
+        }
+
+        /* Cyber Background Grid */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background-size: 40px 40px;
+            background-image: 
+                linear-gradient(to right, rgba(0, 243, 255, 0.03) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(0, 243, 255, 0.03) 1px, transparent 1px);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .main-wrapper {
+            position: relative;
+            z-index: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            max-width: 520px;
+            width: 100%;
+        }
+
+        /* Header Title */
+        .game-header {
+            text-align: center;
+            margin-bottom: 16px;
+        }
+
+        .title-main {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 32px;
+            font-weight: 900;
+            letter-spacing: 4px;
+            color: #ffffff;
+            text-shadow: 
+                0 0 5px #fff,
+                0 0 10px var(--neon-cyan),
+                0 0 20px var(--neon-cyan),
+                0 0 40px var(--neon-cyan);
+            margin-bottom: 4px;
+            text-transform: uppercase;
+        }
+
+        .title-sub {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 11px;
+            letter-spacing: 6px;
+            color: var(--neon-pink);
+            text-shadow: 0 0 8px var(--neon-pink);
+            text-transform: uppercase;
+        }
+
+        /* HUD Panel */
+        .hud-panel {
+            width: 100%;
+            display: grid;
+            grid-template-columns: repeat(4, 1fr) auto;
+            gap: 8px;
+            background: var(--bg-card);
+            border: 1px solid rgba(0, 243, 255, 0.3);
+            border-radius: 8px;
+            padding: 10px 14px;
+            margin-bottom: 14px;
+            box-shadow: 0 0 15px rgba(0, 243, 255, 0.15), inset 0 0 10px rgba(0, 243, 255, 0.05);
+            backdrop-filter: blur(8px);
+            align-items: center;
+        }
+
+        .hud-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .hud-label {
+            font-size: 10px;
+            font-family: 'Orbitron', sans-serif;
+            color: rgba(226, 241, 255, 0.6);
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        .hud-value {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 18px;
+            font-weight: 700;
+            color: #fff;
+            text-shadow: 0 0 8px var(--neon-cyan);
+        }
+
+        .hud-value.highlight-pink {
+            color: var(--neon-pink);
+            text-shadow: 0 0 8px var(--neon-pink);
+        }
+
+        .hud-value.highlight-yellow {
+            color: var(--neon-yellow);
+            text-shadow: 0 0 8px var(--neon-yellow);
+        }
+
+        .sound-btn {
+            background: rgba(0, 243, 255, 0.1);
+            border: 1px solid var(--neon-cyan);
+            color: var(--neon-cyan);
+            border-radius: 6px;
+            width: 34px;
+            height: 34px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.2s ease;
+            box-shadow: 0 0 8px rgba(0, 243, 255, 0.2);
+        }
+
+        .sound-btn:hover {
+            background: var(--neon-cyan);
+            color: #000;
+            box-shadow: 0 0 15px var(--neon-cyan);
+        }
+
+        /* Canvas Frame */
+        .canvas-frame {
+            position: relative;
+            padding: 4px;
+            background: linear-gradient(135deg, rgba(0,243,255,0.4), rgba(255,0,127,0.4));
+            border-radius: 12px;
+            box-shadow: 
+                0 0 25px rgba(0, 243, 255, 0.25),
+                0 0 50px rgba(255, 0, 127, 0.15);
+        }
+
+        .canvas-inner {
+            position: relative;
+            border-radius: 8px;
+            overflow: hidden;
+            background: #020208;
+        }
+
+        canvas {
+            display: block;
+            width: 440px;
+            height: 560px;
+            background: #04040d;
+        }
+
+        /* Modal Overlay Screens */
+        .overlay-screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(5, 5, 15, 0.88);
+            backdrop-filter: blur(8px);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 30px;
+            text-align: center;
+            z-index: 20;
+            transition: opacity 0.3s ease;
+        }
+
+        .overlay-screen.hidden {
+            display: none;
+        }
+
+        .modal-card {
+            background: rgba(15, 15, 35, 0.9);
+            border: 2px solid var(--neon-cyan);
+            border-radius: 12px;
+            padding: 30px 24px;
+            width: 100%;
+            max-width: 360px;
+            box-shadow: 
+                0 0 30px rgba(0, 243, 255, 0.3),
+                inset 0 0 15px rgba(0, 243, 255, 0.1);
+            position: relative;
+        }
+
+        .modal-card.victory {
+            border-color: var(--neon-yellow);
+            box-shadow: 
+                0 0 35px rgba(255, 230, 0, 0.4),
+                inset 0 0 15px rgba(255, 230, 0, 0.15);
+        }
+
+        .modal-card.gameover {
+            border-color: var(--neon-pink);
+            box-shadow: 
+                0 0 35px rgba(255, 0, 127, 0.4),
+                inset 0 0 15px rgba(255, 0, 127, 0.15);
+        }
+
+        .modal-title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 26px;
+            font-weight: 900;
+            margin-bottom: 12px;
+            letter-spacing: 2px;
+        }
+
+        .modal-card.victory .modal-title {
+            color: var(--neon-yellow);
+            text-shadow: 0 0 12px var(--neon-yellow);
+        }
+
+        .modal-card.gameover .modal-title {
+            color: var(--neon-pink);
+            text-shadow: 0 0 12px var(--neon-pink);
+        }
+
+        .modal-card.start .modal-title {
+            color: var(--neon-cyan);
+            text-shadow: 0 0 12px var(--neon-cyan);
+        }
+
+        .stat-group {
+            margin: 16px 0;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .stat-row {
+            display: flex;
+            justify-content: space-between;
+            font-size: 15px;
+            border-bottom: 1px dashed rgba(255, 255, 255, 0.15);
+            padding-bottom: 4px;
+        }
+
+        .stat-label {
+            color: rgba(226, 241, 255, 0.7);
+        }
+
+        .stat-val {
+            font-family: 'Orbitron', sans-serif;
+            font-weight: 700;
+            color: #fff;
+        }
+
+        .btn-neon {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 14px;
+            font-weight: 700;
+            letter-spacing: 2px;
+            padding: 12px 28px;
+            margin-top: 12px;
+            background: transparent;
+            color: var(--neon-cyan);
+            border: 2px solid var(--neon-cyan);
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            box-shadow: 0 0 15px rgba(0, 243, 255, 0.3);
+            text-transform: uppercase;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-neon:hover {
+            background: var(--neon-cyan);
+            color: #050510;
+            box-shadow: 0 0 25px var(--neon-cyan);
+            transform: translateY(-2px);
+        }
+
+        .btn-neon.pink {
+            color: var(--neon-pink);
+            border-color: var(--neon-pink);
+            box-shadow: 0 0 15px rgba(255, 0, 127, 0.3);
+        }
+
+        .btn-neon.pink:hover {
+            background: var(--neon-pink);
+            color: #050510;
+            box-shadow: 0 0 25px var(--neon-pink);
+        }
+
+        /* Controls hint */
+        .controls-hint {
+            margin-top: 14px;
+            display: flex;
+            gap: 16px;
+            font-size: 13px;
+            color: rgba(226, 241, 255, 0.6);
+            justify-content: center;
+            align-items: center;
+        }
+
+        .key-badge {
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 11px;
+            color: var(--neon-cyan);
+        }
     </style>
 </head>
 <body>
-    <h1 style="color: white; margin-bottom: 20px;">ブロック崩しゲーム</h1>
-    
-    <div id="gameInfo">
-        <div>スコア: <span id="score">0</span></div>
-        <div>ブロック: <span id="blocksLeft">0</span></div>
-    </div>
 
-    <div id="gameContainer">
-        <canvas id="gameCanvas" width="400" height="600"></canvas>
-        <div id="gameOver">
-            <h2 id="gameOverTitle">Game Over</h2>
-            <p id="gameOverScore"></p>
-            <button onclick="location.reload()">もう一度プレイ</button>
+    <div class="main-wrapper">
+        <!-- Header -->
+        <header class="game-header">
+            <h1 class="title-main">NEON BREAKOUT</h1>
+            <div class="title-sub">CYBER ARCADIA v2.0</div>
+        </header>
+
+        <!-- HUD -->
+        <div class="hud-panel">
+            <div class="hud-item">
+                <span class="hud-label">SCORE</span>
+                <span id="score" class="hud-value">0</span>
+            </div>
+            <div class="hud-item">
+                <span class="hud-label">HIGH</span>
+                <span id="highScore" class="hud-value highlight-yellow">0</span>
+            </div>
+            <div class="hud-item">
+                <span class="hud-label">COMBO</span>
+                <span id="comboDisplay" class="hud-value highlight-pink">x1</span>
+            </div>
+            <div class="hud-item">
+                <span class="hud-label">BLOCKS</span>
+                <span id="blocksLeft" class="hud-value">0</span>
+            </div>
+            <button id="soundToggle" class="sound-btn" title="サウンド切り替え">🔊</button>
         </div>
-    </div>
 
-    <div class="instructions">
-        <p>マウスを動かしてパドルを操作 | スペースキーでゲーム開始</p>
+        <!-- Canvas Container -->
+        <div class="canvas-frame">
+            <div class="canvas-inner">
+                <canvas id="gameCanvas" width="440" height="560"></canvas>
+
+                <!-- Start Modal -->
+                <div id="startOverlay" class="overlay-screen">
+                    <div class="modal-card start">
+                        <h2 class="modal-title">READY PLAYER 1</h2>
+                        <p style="font-size: 14px; margin-bottom: 20px; color: rgba(226,241,255,0.8);">
+                            ネオンのグリッド空間でブロックを全滅させよ！
+                        </p>
+                        <button id="startBtn" class="btn-neon">GAME START</button>
+                    </div>
+                </div>
+
+                <!-- Pause Overlay -->
+                <div id="pauseOverlay" class="overlay-screen hidden">
+                    <div class="modal-card start">
+                        <h2 class="modal-title">PAUSED</h2>
+                        <p style="font-size: 14px; margin-bottom: 20px; color: rgba(226,241,255,0.8);">
+                            一時停止中
+                        </p>
+                        <button id="resumeBtn" class="btn-neon">RESUME</button>
+                    </div>
+                </div>
+
+                <!-- Game Over / Victory Modal -->
+                <div id="gameOverOverlay" class="overlay-screen hidden">
+                    <div id="modalCard" class="modal-card gameover">
+                        <h2 id="gameOverTitle" class="modal-title">GAME OVER</h2>
+                        <div class="stat-group">
+                            <div class="stat-row">
+                                <span class="stat-label">スコア:</span>
+                                <span id="finalScore" class="stat-val">0</span>
+                            </div>
+                            <div class="stat-row">
+                                <span class="stat-label">ハイスコア:</span>
+                                <span id="finalHighScore" class="stat-val">0</span>
+                            </div>
+                            <div class="stat-row">
+                                <span class="stat-label">最大コンボ:</span>
+                                <span id="maxCombo" class="stat-val">x1</span>
+                            </div>
+                        </div>
+                        <button id="restartBtn" class="btn-neon pink">PLAY AGAIN</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Controls Guide -->
+        <div class="controls-hint">
+            <span>操作: <span class="key-badge">MOUSE</span> パドル移動</span>
+            <span>|</span>
+            <span><span class="key-badge">SPACE</span> スタート</span>
+            <span>|</span>
+            <span><span class="key-badge">P</span> ポーズ</span>
+        </div>
     </div>
 
     <script src="game.js"></script>
